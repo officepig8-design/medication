@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>藥品領取單 / Phiếu Nhận Thuốc</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif;
+    }
+
+    body {
+      background-color: #f3f4f6;
+      color: #1f2937;
+      padding: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      overflow: hidden;
+      padding: 14px 10px;
+    }
+
+    .header-title {
+      text-align: center;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e5e7eb;
+      margin-bottom: 14px;
+    }
+
+    .header-title h1 {
+      font-size: 1.2rem;
+      color: #111827;
+      font-weight: 700;
+    }
+
+    .header-title p {
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 4px;
+      white-space: nowrap;
+    }
+
+    .form-group label span {
+      font-size: 0.78rem;
+      color: #4b5563;
+      font-weight: 500;
+      margin-left: 2px;
+    }
+
+    .form-control, .form-select {
+      width: 100%;
+      padding: 9px 8px;
+      font-size: 0.88rem;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      background-color: #fff;
+      color: #111827;
+      outline: none;
+      transition: border-color 0.15s ease-in-out;
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: #059669;
+      box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+    }
+
+    /* 日期與時段對分，確保空間充足不切字 */
+    .grid-date-time {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    /* 批次區塊外框 */
+    .batch-card {
+      background: #f9fafb;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 12px;
+    }
+
+    .batch-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px dashed #cbd5e1;
+    }
+
+    .batch-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #047857;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .grid-med-item {
+      display: grid;
+      grid-template-columns: 1.3fr 0.9fr 32px;
+      gap: 6px;
+      align-items: center;
+      margin-top: 6px;
+    }
+
+    .btn-add-batch {
+      background-color: #ecfdf5;
+      color: #047857;
+      border: 1px dashed #059669;
+      padding: 10px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 14px;
+    }
+
+    .btn-add-med {
+      background-color: #e0f2fe;
+      color: #0369a1;
+      border: 1px dashed #0284c7;
+      padding: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .btn-del-item {
+      background-color: #fee2e2;
+      color: #dc2626;
+      border: 1px solid #fca5a5;
+      border-radius: 4px;
+      height: 36px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 11px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-success {
+      background-color: #059669;
+      color: #ffffff;
+    }
+
+    .btn-secondary {
+      background-color: #4b5563;
+      color: #ffffff;
+    }
+
+    /* 預覽卡片區域 */
+    #preview-section {
+      display: none;
+      margin-top: 20px;
+      border-top: 2px dashed #d1d5db;
+      padding-top: 16px;
+    }
+
+    .preview-header {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 10px;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .preview-header span {
+      display: block;
+      font-size: 0.78rem;
+      color: #4b5563;
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    .card-container {
+      background: #ffffff;
+      padding: 6px 2px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .order-table {
+      width: 100%;
+      max-width: 100%;
+      border-collapse: collapse;
+      border: 2px solid #000000;
+      background-color: #ffffff;
+      table-layout: auto;
+      box-sizing: border-box;
+    }
+
+    .order-table td {
+      border: 1.5px solid #000000;
+      padding: 7px 4px;
+      text-align: center;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", "Segoe UI", Roboto, sans-serif;
+      font-size: clamp(0.72rem, 3.1vw, 0.88rem);
+      font-weight: 700;
+      color: #000000;
+      vertical-align: middle;
+      white-space: nowrap;
+      box-sizing: border-box;
+    }
+
+    .order-table td.col-label {
+      background-color: #e5e7eb;
+      color: #111827;
+    }
+
+    .order-table td.col-batch-header {
+      background-color: #d1fae5;
+      color: #065f46;
+      font-weight: 800;
+      text-align: left;
+      padding-left: 8px;
+    }
+
+    .order-table td.remark-cell {
+      white-space: pre-wrap;
+      word-break: break-all;
+      text-align: center;
+      line-height: 1.25;
+      font-size: clamp(0.7rem, 3vw, 0.88rem);
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <div class="header-title">
+    <h1>藥品領取單</h1>
+    <p>Phiếu Nhận Thuốc Chăn Nuôi</p>
+  </div>
+
+  <form id="medForm">
+    <!-- 1. 場別 (獨佔整行) -->
+    <div class="form-group">
+      <label>場別 <span>(Chọn xưởng)</span></label>
+      <select class="form-select" id="farm" required>
+        <option value="">-- 請選擇場別 --</option>
+        <option value="裕良">裕良 (I Li-ang)</option>
+        <option value="文政">文政 (Uân Chơng)</option>
+        <option value="萬福">萬福 (Uạn Phú)</option>
+        <option value="秋霞">秋霞 (Chiu Siá)</option>
+        <option value="青山">青山 (Chinh San)</option>
+        <option value="秉豐">秉豐 (Bing Phâng)</option>
+        <option value="易畜">易畜 (I Sú)</option>
+        <option value="聖賢">聖賢 (Sâng Siên)</option>
+        <option value="鄉福">鄉福 (Siang Phú)</option>
+        <option value="寶田">寶田 (Báo Tiên)</option>
+        <option value="家洪">家洪 (Gia Hống)</option>
+        <option value="上春">上春 (Sạng Suân)</option>
+        <option value="後庄">後庄 (Hậu Choang)</option>
+        <option value="下蚶">下蚶 (Siạ Hán)</option>
+        <option value="瑞吉">瑞吉 (Ruây Chi)</option>
+      </select>
+    </div>
+
+    <!-- 2. 領藥日期與時段 (獨立第二行，各占 50% 寬度) -->
+    <div class="form-group">
+      <label>領藥日期 <span>(Ngày nhận)</span></label>
+      <div class="grid-date-time">
+        <input type="date" class="form-control" id="pickupDate" required>
+        <select class="form-select" id="pickupTime" required>
+          <option value="早上 (Buổi sáng)">早上 (Buổi sáng)</option>
+          <option value="下午 (Buổi chiều)">下午 (Buổi chiều)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 3. 批次卡片容器 (可多個批次) -->
+    <div id="batchListContainer"></div>
+
+    <button type="button" class="btn-add-batch" onclick="addBatchBlock()">
+      ＋ 新增批次 (Thêm số lô mới)
+    </button>
+
+    <!-- 4. 備註欄 -->
+    <div class="form-group">
+      <label>備註 <span>(Ghi chú)</span></label>
+      <textarea class="form-control" id="remark" rows="2" placeholder=""></textarea>
+    </div>
+
+    <div class="btn-group">
+      <button type="button" class="btn btn-success" onclick="generateCard()">
+        生成領藥單卡片 (Tạo phiếu nhận)
+      </button>
+    </div>
+  </form>
+
+  <!-- 預覽卡片區域 -->
+  <div id="preview-section">
+    <div class="preview-header">
+      👇 請將下方表格【手機截圖】發至群組 👇
+      <span>(Hãy chụp màn hình bảng dưới đây và gửi vào nhóm)</span>
+    </div>
+    
+    <div class="card-container">
+      <div id="capture-area" style="background:#fff; padding:6px; border-radius:4px; display:inline-block; width:100%; box-sizing:border-box;">
+        <table class="order-table" id="resTable">
+          <!-- 動態生成表格 -->
+        </table>
+      </div>
+    </div>
+
+    <div class="btn-group" style="margin-top: 12px;">
+      <button class="btn btn-secondary" onclick="copyText()">
+        📋 複製文字訊息 (Sao chép văn bản)
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 藥品選項範本（隱藏） -->
+<template id="medOptionsTemplate">
+  <option value="">-- 請選擇藥品 (Chọn thuốc) --</option>
+  <optgroup label="疫苗 (Vaccine)">
+    <option value="APP 50">APP 50</option>
+    <option value="PR 10">PR 10</option>
+    <option value="PR 25">PR 25</option>
+    <option value="PR 50">PR 50</option>
+    <option value="PCVM 100">PCVM 100</option>
+    <option value="PCV 50">PCV 50</option>
+    <option value="PG600 1">PG600 1</option>
+    <option value="PG600 5">PG600 5</option>
+    <option value="HP 25">HP 25</option>
+    <option value="AR 25">AR 25</option>
+    <option value="腸三價 (Tráng sang chia) 25">腸三價 (Tráng sang chia) 25</option>
+    <option value="雙毒 (Suang tút) 25">雙毒 (Suang tút) 25</option>
+    <option value="丹毒 (Tan tút) 50">丹毒 (Tan tút) 50</option>
+    <option value="SEP 50">SEP 50</option>
+    <option value="JE 10">JE 10</option>
+    <option value="PRRS 50">PRRS 50</option>
+    <option value="水腫病 (Suẩy chủng ping) 10">水腫病 (Suẩy chủng ping) 10</option>
+    <option value="水腫病 (Suẩy chủng ping) 50">水腫病 (Suẩy chủng ping) 50</option>
+  </optgroup>
+  <optgroup label="針劑 (Thuốc tiêm)">
+    <option value="拜有利 (Pài iu li)">拜有利 (Pài iu li)</option>
+    <option value="AMO針 (AMO chiêng)">AMO針 (AMO chiêng)</option>
+    <option value="OTC">OTC</option>
+    <option value="益鎮炎 (Í châng iên)">益鎮炎 (Í châng iên)</option>
+    <option value="金靈 (Ching líng)">金靈 (Ching líng)</option>
+    <option value="止血針 (Chỉ se chiêng)">止血針 (Chỉ se chiêng)</option>
+    <option value="永圖靈 (Iủng thấu líng)">永圖靈 (Iủng thấu líng)</option>
+    <option value="依定生 (I ting xâng)">依定生 (I ting xâng)</option>
+    <option value="美他毆寧 (Mẩy tha ao níng)">美他毆寧 (Mẩy tha ao níng)</option>
+    <option value="咳龍 (Kơ lúng)">咳龍 (Kơ lúng)</option>
+    <option value="樂多丁 (Lơ tuo ting)">樂多丁 (Lơ tuo ting)</option>
+    <option value="催生素 (Chuây xâng su)">催生素 (Chuây xâng su)</option>
+    <option value="通血能 (Thung se nâng)">通血能 (Thung se nâng)</option>
+    <option value="寧腸命 (Níng tráng ming)">寧腸命 (Níng tráng ming)</option>
+    <option value="滅蟲(針) (Mết chúng chiêng)">滅蟲(針) (Mết chúng chiêng)</option>
+    <option value="點滴 (Tiểm ti)">點滴 (Tiểm ti)</option>
+    <option value="賜鎮 (Sứ châng)">賜鎮 (Sứ châng)</option>
+    <option value="賜倍靈 (Sứ pây líng)">賜倍靈 (Sứ pây líng)</option>
+    <option value="舒爾必寧 (Su ơ pi níng)">舒爾必寧 (Su ơ pi níng)</option>
+    <option value="配尼黴素 (Phei ní mây su)">配尼黴素 (Phei ní mây su)</option>
+    <option value="林可黴素 (Lín khơ mây su)">林可黴素 (Lín khơ mây su)</option>
+    <option value="益定爽 (Í ting xoảng)">益定爽 (Í ting xoảng)</option>
+    <option value="畜舒坦 (Xú su thản)">畜舒坦 (Xú su thản)</option>
+    <option value="福利康 (Fú li khang)">福利康 (Fú li khang)</option>
+    <option value="耐釋喜 (Nai xư xỉ)">耐釋喜 (Nai xư xỉ)</option>
+    <option value="抗炎寧 (Kháng iên níng)">抗炎寧 (Kháng iên níng)</option>
+    <option value="西信福 (Si sing fú)">西信福 (Si sing fú)</option>
+    <option value="賜德金黴素 (Sứ tơ ching mây su)">賜德金黴素 (Sứ tơ ching mây su)</option>
+    <option value="使爾必寧 (Sư ơ pi níng)">使爾必寧 (Sư ơ pi níng)</option>
+    <option value="強先樂 (Chiáng sian lơ)">強先樂 (Chiáng sian lơ)</option>
+    <option value="維他命K (Uây tha ming K)">維他命K (Uây tha ming K)</option>
+    <option value="肺靈 (Fei líng)">肺靈 (Fei líng)</option>
+    <option value="福樂德 (Fú lơ tơ)">福樂德 (Fú lơ tơ)</option>
+    <option value="維他命ADE (Uây tha ming ADE)">維他命ADE (Uây tha ming ADE)</option>
+    <option value="富必達 (Fú pi tá)">富必達 (Fú pi tá)</option>
+    <option value="信福 (Sing fú)">信福 (Sing fú)</option>
+    <option value="晶靈 (Ching líng)">晶靈 (Ching líng)</option>
+    <option value="斯沛臨 (Sư phei lín)">斯沛臨 (Sư phei lín)</option>
+    <option value="力克爽 (Li khơ xoảng)">力克爽 (Li khơ xoảng)</option>
+    <option value="爵洛得 (Chía luô tơ)">爵洛得 (Chía luô tơ)</option>
+  </optgroup>
+  <optgroup label="🥛 口服劑 (Thuốc uống)">
+    <option value="維保同 (Uây páo thúng)">維保同 (Uây páo thúng)</option>
+    <option value="拜球淨 (Pài chiốu ching)">拜球淨 (Pài chiốu ching)</option>
+    <option value="全達 (Chúan tá)">全達 (Chúan tá)</option>
+    <option value="愛傳蒂 (Ai chuán ti)">愛傳蒂 (Ai chuán ti)</option>
+  </optgroup>
+  <optgroup label="藥粉 (Thuốc bột)">
+    <option value="大德西林 (Ta tơ si lín)">大德西林 (Ta tơ si lín)</option>
+    <option value="治咳靈 (Chư khơ líng)">治咳靈 (Chư khơ líng)</option>
+    <option value="可痢清 (Khơ li ching)">可痢清 (Khơ li ching)</option>
+    <option value="佳牧精 (Chia mú ching)">佳牧精 (Chia mú ching)</option>
+    <option value="安莫黴素 (An muô mây su)">安莫黴素 (An muô mây su)</option>
+    <option value="施福黴素 (Sư fú mây su)">施福黴素 (Sư fú mây su)</option>
+    <option value="泰萬黴素 (Thai uan mây su)">泰萬黴素 (Thai uan mây su)</option>
+    <option value="福洛德 (Fú luô tơ)">福洛德 (Fú luô tơ)</option>
+    <option value="包好美飼 (Pao hảo mẩy sư)">包好美飼 (Pao hảo mẩy sư)</option>
+    <option value="益滅菌 (Í mết quân)">益滅菌 (Í mết quân)</option>
+    <option value="阿西 (A si)">阿西 (A si)</option>
+    <option value="泰牧素 (Thai mú su)">泰牧素 (Thai mú su)</option>
+  </optgroup>
+  <optgroup label="消毒水 (Thuốc sát trùng)">
+    <option value="滴克靈 (Ti khơ líng)">滴克靈 (Ti khơ líng)</option>
+    <option value="金鳥 (Ching niảo)">金鳥 (Ching niảo)</option>
+    <option value="疫潔靈 (I chiết líng)">疫潔靈 (I chiết líng)</option>
+    <option value="百喜 (Pải xỉ)">百喜 (Pải xỉ)</option>
+    <option value="衛可 (Uây khơ)">衛可 (Uây khơ)</option>
+    <option value="安美淨 (An mẩy ching)">安美淨 (An mẩy ching)</option>
+  </optgroup>
+  <optgroup label="其他 (Khác)">
+    <option value="易滅蟲(水) (I mết chúng xẩy)">易滅蟲(水) (I mết chúng xẩy)</option>
+    <option value="好碘液 (Hảo tiển iet)">好碘液 (Hảo tiển iet)</option>
+    <option value="無菌碘 (U ching tiển)">無菌碘 (U ching tiển)</option>
+    <option value="普威隆碘酒精液 (Phủ uây lúng tiển chiốu ching iet)">普威隆碘酒精液 (Phủ uây lúng tiển chiốu ching iet)</option>
+    <option value="酒精 (Chiốu ching)">酒精 (Chiốu ching)</option>
+  </optgroup>
+</template>
+
+<script>
+  let batchCount = 0;
+
+  window.onload = function() {
+    const today = new Date();
+    document.getElementById('pickupDate').value = formatDateInput(today);
+    addBatchBlock(); // 預設新增第一個批次
+  };
+
+  function formatDateInput(d) {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  function formatDisplayDate(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const m = date.getMonth() + 1;
+    const d = date.getDate();
+    const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+    const w = weekDays[date.getDay()];
+    return `${m}/${d}(${w})`;
+  }
+
+  function getMedOptionsHtml() {
+    return document.getElementById('medOptionsTemplate').innerHTML;
+  }
+
+  // 新增一個批次大區塊
+  function addBatchBlock() {
+    batchCount++;
+    const container = document.getElementById('batchListContainer');
+    const card = document.createElement('div');
+    card.className = 'batch-card';
+    card.id = `batchCard_${batchCount}`;
+
+    card.innerHTML = `
+      <div class="batch-header">
+        <span class="batch-title">批次 #${batchCount}</span>
+        ${batchCount > 1 ? `<button type="button" class="btn-del-item" style="padding:0 8px; height:28px;" onclick="removeBatchBlock('${card.id}')">刪除批次(Hủy)</button>` : ''}
+      </div>
+      
+      <!-- 批次與頭數 -->
+      <div class="grid-2">
+        <div class="form-group" style="margin-bottom:6px;">
+          <input type="text" class="form-control batch-no" placeholder="批次 (Số lô)" required>
+        </div>
+        <div class="form-group" style="margin-bottom:6px;">
+          <input type="text" class="form-control batch-head" placeholder="頭數 (Số con)">
+        </div>
+      </div>
+
+      <!-- 藥品明細清單 -->
+      <div class="med-items-container">
+        <div class="grid-med-item">
+          <select class="form-select med-name" required>
+            ${getMedOptionsHtml()}
+          </select>
+          <input type="text" class="form-control med-qty" placeholder="數量 (Số lượng)" required>
+          <div></div>
+        </div>
+      </div>
+
+      <button type="button" class="btn-add-med" onclick="addMedItem(this)">
+        ＋ 新增該批次藥品 (Thêm thuốc)
+      </button>
+    `;
+
+    container.appendChild(card);
+  }
+
+  function removeBatchBlock(id) {
+    document.getElementById(id).remove();
+  }
+
+  // 在某批次下新增藥品行
+  function addMedItem(btn) {
+    const medContainer = btn.previousElementSibling;
+    const div = document.createElement('div');
+    div.className = 'grid-med-item';
+    div.innerHTML = `
+      <select class="form-select med-name" required>
+        ${getMedOptionsHtml()}
+      </select>
+      <input type="text" class="form-control med-qty" placeholder="數量 (Số lượng)" required>
+      <button type="button" class="btn-del-item" onclick="this.parentElement.remove()">✕</button>
+    `;
+    medContainer.appendChild(div);
+  }
+
+  let textToCopy = '';
+
+  function generateCard() {
+    const farm = document.getElementById('farm').value;
+    const pickupDate = document.getElementById('pickupDate').value;
+    const pickupTime = document.getElementById('pickupTime').value;
+    const remark = document.getElementById('remark').value || '無';
+
+    if (!farm || !pickupDate) {
+      alert('請選擇場別與領藥日期！\nVui lòng chọn xưởng và ngày!');
+      return;
+    }
+
+    const batchCards = document.querySelectorAll('.batch-card');
+    let batchDataList = [];
+
+    for (let card of batchCards) {
+      const bNo = card.querySelector('.batch-no').value.trim();
+      const bHead = card.querySelector('.batch-head').value.trim();
+      const medNames = card.querySelectorAll('.med-name');
+      const medQtys = card.querySelectorAll('.med-qty');
+
+      let meds = [];
+      for (let i = 0; i < medNames.length; i++) {
+        const name = medNames[i].value.trim();
+        const qty = medQtys[i].value.trim();
+        if (name && qty) {
+          meds.push({ name, qty });
+        }
+      }
+
+      if (bNo || meds.length > 0) {
+        batchDataList.push({
+          batchNo: bNo || '未填批次',
+          head: bHead ? `(${bHead})` : '',
+          meds: meds
+        });
+      }
+    }
+
+    if (batchDataList.length === 0 && remark === '無') {
+      alert('請至少填寫一個批次藥品或填寫備註！');
+      return;
+    }
+
+    const displayDate = `${formatDisplayDate(pickupDate)} ${pickupTime.split(' ')[0]}`;
+    const table = document.getElementById('resTable');
+
+    let tableHtml = `
+      <tr>
+        <td class="col-label" style="width:20%;">場別</td>
+        <td style="width:30%;">${farm}</td>
+        <td class="col-label" style="width:20%;">領藥時間</td>
+        <td style="width:30%;">${displayDate}</td>
+      </tr>
+    `;
+
+    let copyTextArr = [`【藥品領取單】\n場別：${farm}\n領藥時間：${displayDate}`];
+
+    // 依「批次 ➔ 藥品」順序組合表格
+    batchDataList.forEach((b) => {
+      tableHtml += `
+        <tr>
+          <td class="col-batch-header" colspan="4">批次：${b.batchNo} ${b.head}</td>
+        </tr>
+      `;
+      
+      let bText = `\n批次：${b.batchNo} ${b.head}`;
+      b.meds.forEach(m => {
+        tableHtml += `
+          <tr>
+            <td class="col-label" colspan="2">${m.name}</td>
+            <td colspan="2">${m.qty}</td>
+          </tr>
+        `;
+        bText += `\n - ${m.name}：${m.qty}`;
+      });
+      copyTextArr.push(bText);
+    });
+
+    // 備註欄
+    tableHtml += `
+      <tr>
+        <td class="col-label">備註</td>
+        <td class="remark-cell" colspan="3">${remark}</td>
+      </tr>
+    `;
+    if (remark !== '無') {
+      copyTextArr.push(`\n備註：\n${remark}`);
+    }
+
+    table.innerHTML = tableHtml;
+    textToCopy = copyTextArr.join('\n');
+
+    const previewSection = document.getElementById('preview-section');
+    previewSection.style.display = 'block';
+    previewSection.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function copyText() {
+    if (!textToCopy) return;
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      alert('已複製文字訊息！\nĐã sao chép tin nhắn!');
+    });
+  }
+</script>
+
+</body>
+</html>
